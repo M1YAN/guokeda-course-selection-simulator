@@ -1,6 +1,17 @@
 # 国科大模拟选课系统
 
-> 基于小红书博主“耳总”提供的选课基础程序进行二次开发，谨此致谢。课程卡片、课表交互和整体使用框架都建立在这份基础程序之上。
+<p align="center">
+  <a href="https://xhslink.cn/m/72rDAXXP1tW">
+    <img src="./erzong.jpg" alt="耳总头像" width="112" height="112" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://xhslink.cn/m/72rDAXXP1tW"><img src="https://img.shields.io/badge/%E8%80%B3%E6%80%BB-%E5%B0%8F%E7%BA%A2%E4%B9%A6%E4%B8%BB%E9%A1%B5-FE2442?style=for-the-badge&logo=xiaohongshu&logoColor=white" alt="访问耳总的小红书主页" /></a>
+  <a href="https://github.com/GZWSAMA/guokeda-course-selection-simulator"><img src="https://img.shields.io/badge/GitHub-%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81-181717?style=for-the-badge&logo=github&logoColor=white" alt="查看 GitHub 项目源码" /></a>
+</p>
+
+> **基础程序致谢**：本项目基于小红书博主“耳总”提供的选课基础程序进行二次开发。课程卡片、课表交互和整体使用框架都建立在这份基础程序之上，感谢耳总的开放分享。
 
 > 先排时间，再做选择。把“这门课能不能选”变成“这门课和我的课表合不合得来”。
 
@@ -13,7 +24,7 @@
 1. 课程列表不方便直观看出时间冲突；
 2. 已经知道“周三 1-4 节有空”，却很难反过来查出这段时间还能选什么。
 
-本项目以耳总提供的基础程序为起点，围绕这两个问题继续完善：把课程时间放进课表，把空闲时间变成检索条件，把冲突原因直接写在推荐卡片上。
+本项目以耳总提供的基础程序为起点，围绕这两个问题继续完善：把课程时间放进课表，把空闲时间变成检索条件，把冲突原因直接写在推荐卡片上。简单说，它想让你在点击官方“提交”之前，先拥有一次不会手抖的排课彩排。
 
 ## 这个页面能做什么
 
@@ -56,5 +67,9 @@ erzong.jpg                 耳总头像
 ## 项目边界
 
 本项目是学习和个人规划用途的模拟工具，不是学校官方系统，也不会提交真实选课结果。课程信息、培养方案和最终选课资格请始终以国科大官方系统及通知为准。
+
+## 开源素材
+
+顶部按钮使用 [Shields.io](https://shields.io/) 生成，并使用 [Simple Icons](https://simpleicons.org/) 的开源品牌图标。头像文件 `erzong.jpg` 仅用于跳转耳总主页和项目致谢展示。
 
 如果你发现筛选逻辑、课程数据或界面交互还有可以改进的地方，欢迎在仓库中提出 Issue 或提交 Pull Request。
