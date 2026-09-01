@@ -215,7 +215,10 @@ td.slot.conflict-cell{background:#fff2f0}
     <div class="card">
       <div class="card-header">
         <span>已选课程</span>
-        <button class="btn btn-sm btn-danger" onclick="clearAll()">清空</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-primary" onclick="exportToAppleCalendar()">导出日历</button>
+          <button class="btn btn-sm btn-danger" onclick="clearAll()">清空</button>
+        </div>
       </div>
       <div class="degree-note" style="padding:8px 12px 0">专业类课程勾选“学位课”前，请确认该课程分类符合自己专业的一级学科。</div>
       <div class="card-body" style="padding-bottom:8px">
@@ -350,6 +353,9 @@ var PERIODS = [
 ];
 var DAYS = ['周一','周二','周三','周四','周五','周六','周日'];
 var MAX_WEEK = 20;
+// 学期第1周周一，教学周据此换算为实际日期
+var SEMESTER_START = new Date(2026, 7, 31);
+var CALENDAR_TIMEZONE = 'Asia/Shanghai';
 
 // 课程颜色调色板
 var COLORS = [
@@ -1008,6 +1014,82 @@ function selectScheduleTime(day, start, end){
   refreshRecommendationView();
   var panel = document.getElementById('recommendList');
   if(panel) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ===== 苹果日历导出（iCalendar/ICS） =====
+function exportToAppleCalendar(){
+  var ids = Object.keys(selected);
+  if(!ids.length){
+    alert('请先选择至少一门课程');
+    return;
+  }
+  var lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0',
+    'PRODID:-//国科大模拟选课系统//CN', 'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH', 'X-WR-CALNAME:国科大2026秋季课程表',
+    'X-WR-TIMEZONE:'+CALENDAR_TIMEZONE
+  ];
+  var eventCount = 0;
+  ids.forEach(function(id){
+    var c = selected[id];
+    (c.sessions || []).forEach(function(s, si){
+      (s.w || []).forEach(function(week){
+        var date = new Date(SEMESTER_START.getTime());
+        date.setDate(date.getDate() + (week-1)*7 + (s.d-1));
+        var startDef = (PERIODS[s.s-1] || {}).t;
+        var endDef = (PERIODS[s.e-1] || {}).t;
+        if(!startDef || !endDef) return;
+        var start = parsePeriodDate(date, startDef.split('-')[0]);
+        var end = parsePeriodDate(date, endDef.split('-')[1]);
+        lines.push('BEGIN:VEVENT');
+        lines.push('UID:course-'+c.id+'-session-'+si+'-week-'+week+'@select-class');
+        lines.push('DTSTAMP:'+formatICSUTC(new Date()));
+        lines.push('SUMMARY:'+escapeICS(c.name));
+        lines.push('DTSTART;TZID='+CALENDAR_TIMEZONE+':'+formatICSLocal(start));
+        lines.push('DTEND;TZID='+CALENDAR_TIMEZONE+':'+formatICSLocal(end));
+        if(s.room) lines.push('LOCATION:'+escapeICS(s.room));
+        lines.push('DESCRIPTION:'+escapeICS('课程编码：'+(c.code||'')+'\n教师：'+(s.teacher||courseTeachers(c)||'')+'\n教学周：第'+week+'周\n课程属性：'+(c.attr||'')));
+        lines.push('END:VEVENT');
+        eventCount++;
+      });
+    });
+  });
+  lines.push('END:VCALENDAR');
+  var blob = new Blob([lines.join('\r\n')+'\r\n'], {type:'text/calendar;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = '国科大2026秋季课程表.ics';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  alert('已生成 '+eventCount+' 个日历事件，请打开下载的 ICS 文件导入 Apple 日历。');
+}
+
+function parsePeriodDate(date, time){
+  var parts = time.split(':');
+  var result = new Date(date.getTime());
+  result.setHours(Number(parts[0]), Number(parts[1]), 0, 0);
+  return result;
+}
+
+function formatICSLocal(date){
+  function pad(n){ return String(n).padStart(2, '0'); }
+  return date.getFullYear()+pad(date.getMonth()+1)+pad(date.getDate())
+    +'T'+pad(date.getHours())+pad(date.getMinutes())+'00';
+}
+
+function formatICSUTC(date){
+  function pad(n){ return String(n).padStart(2, '0'); }
+  return date.getUTCFullYear()+pad(date.getUTCMonth()+1)+pad(date.getUTCDate())
+    +'T'+pad(date.getUTCHours())+pad(date.getUTCMinutes())+pad(date.getUTCSeconds())+'Z';
+}
+
+function escapeICS(value){
+  return String(value == null ? '' : value)
+    .replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
 }
 
 // ===== Modal =====
